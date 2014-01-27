@@ -49,3 +49,4 @@ nosetests.xml
 
 # Other files
 temp.py
+simple/
