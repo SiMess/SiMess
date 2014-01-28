@@ -8,8 +8,8 @@ port = None
 nickname = None
 
 
-def prompt():
-    sys.stdout.write('@> ')
+def prompt(symbol="@", text=""):
+    sys.stdout.write('{0}> {1}'.format(str(symbol), str(text)))
     sys.stdout.flush()
 
 # Main function
@@ -76,7 +76,7 @@ if __name__ == "__main__":
                 else:
                     # Print data
                     sys.stdout.write("\n\t{0}\n".format(data.decode()))
-                    prompt()
+                    prompt("+")
 
             # User entered a message
             else:
