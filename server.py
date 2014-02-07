@@ -62,7 +62,7 @@ class SiMess():
             if sk != server and sk != sock_source:
                 try:
                     sk.send(message)
-                except (ConnectionError, ConnectionRefusedError, ConnectionAbortedError):
+                except socket.error:
                     # Broken socket connection may be, chat client pressed ctrl+c for example
                     sk.close()
                     connection_list.remove(sk)
@@ -112,10 +112,10 @@ if __name__ == "__main__":
                     # a "Connection reset by peer" exception will be thrown
                     data = bytes(sock.recv(buffer_size)).decode()
                     if data == "/q" or not data:
-                        raise ConnectionResetError
+                        raise socket.error
                     elif data:
                         server_simess.broadcast_msg(sock, data)
-                except ConnectionResetError:
+                except socket.error:
                     server_simess.remove_client(sock)
                     continue
 
