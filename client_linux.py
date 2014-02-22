@@ -44,7 +44,7 @@ if __name__ == "__main__":
     try:
         s.connect((host, port))
         s.send(nickname.encode())
-    except ConnectionRefusedError:
+    except socket.error:
         print("\t[ Unable to connect ]")
         sys.exit()
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
             if sock == s:
                 try:
                     data = sock.recv(4096)
-                except ConnectionResetError:
+                except socket.error:
                     print("\n\t[ Disconnected from server ]")
                     s.close()
                     sys.exit()
@@ -87,4 +87,6 @@ if __name__ == "__main__":
                     sys.exit()
                 else:
                     s.send(msg.encode())
+                    conf = s.recv(4096)
+                    sys.stdout.write("\t{0}\n\n".format(conf.decode()))
                     prompt()

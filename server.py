@@ -29,7 +29,7 @@ if __name__ == "__main__":
                             server.remove_connection(sock)
                             continue
             except KeyboardInterrupt:
-                raise
+                break
 
         except KeyboardInterrupt:
             break

@@ -39,7 +39,7 @@ class SiMessServer():
         if report:
             timestamp = gmtime()
 
-            args = {
+            kwargs = {
                 "sock": sock,
                 "event": server_strings.client_status_str[1],
                 "nick": nickname,
@@ -48,7 +48,7 @@ class SiMessServer():
                 "share": True
             }
 
-            self.event_report(**args)
+            self.event_report(**kwargs)
 
     def remove_connection(self, sock):
 
@@ -56,7 +56,7 @@ class SiMessServer():
         nickname = str(self.nick_dict[sock.getpeername()])
         timestamp = gmtime()
 
-        args = {
+        kwargs = {
             "sock": sock,
             "event": server_strings.client_status_str[0],
             "nick": nickname,
@@ -65,7 +65,7 @@ class SiMessServer():
             "share": True
         }
 
-        self.event_report(**args)
+        self.event_report(**kwargs)
 
         del self.nick_dict[sock.getpeername()]
         self.connection_list.remove(sock)
@@ -73,7 +73,7 @@ class SiMessServer():
 
     def event_report(self, sock, event, nick, peer, timestamp, share=False):
 
-        args = {
+        kwargs = {
             "sock": sock,
             "event": event,
             "nick": nick,
@@ -81,10 +81,10 @@ class SiMessServer():
             "timestamp": timestamp
         }
 
-        self.event_print(**args)
+        self.event_print(**kwargs)
 
         if share:
-            self.event_share(**args)
+            self.event_share(**kwargs)
 
     def event_print(self, sock, event, nick, peer, timestamp):
 
@@ -100,30 +100,30 @@ class SiMessServer():
 
         self.data_broadcast(sock, data)
 
-    def client_functions(self, function):
+    def client_functions(self, func, sock):
 
-        functions_list = {
-            "": ""
-        }
+        functions = dict()
 
-        f = str(function).lower()
+        f = functions.get(func)
 
-        if f in functions_list.keys():
-            functions_list[f]()
+        if f == "":
+            pass
         else:
+            sock.send(server_strings.server_error_str["Unknown Command"].strip().encode())
             print(server_strings.server_error_str["Unknown Command"])
 
-    def server_functions(self, function):
+    def server_functions(self, func, sock):
 
-        functions_list = {
-            "//q": "self.close"
+        functions = {
+            "//q": "shutdown"
         }
 
-        f = str(function).lower()
+        f = functions.get(func)
 
-        if f in functions_list.keys():
-            functions_list[f]()
+        if f == "shutdown":
+            raise KeyboardInterrupt
         else:
+            sock.send(server_strings.server_error_str["Unknown Command"].strip().encode())
             print(server_strings.server_error_str["Unknown Command"])
 
     def message_receive(self, sock):
@@ -131,10 +131,10 @@ class SiMessServer():
         data = bytes(sock.recv(self.buffer_size)).decode()
 
         if data:
-            if data[0] == '/':
-                self.client_functions(data)
+            if data[0] == '/' and data[1] != '/':
+                self.client_functions(data, sock)
             elif data[0] == '/' and data[1] == '/':
-                self.server_functions(data)
+                self.server_functions(data, sock)
             else:
                 return data
         else:
@@ -167,6 +167,8 @@ class SiMessServer():
                     self.remove_connection(sk)
 
     def close(self):
+
+        print(server_strings.server_events_str["Server Shutting Down"])
 
         del self.host, \
             self.port, \
